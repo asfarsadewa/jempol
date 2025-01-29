@@ -5,8 +5,13 @@ import { FeedButton } from './FeedButton';
 import type { Vector, Color } from 'p5';
 import type P5 from 'p5';
 
+// Extend P5 type to include our custom method
+interface P5WithFeeding extends P5 {
+  startFeeding: () => void;
+}
+
 class Particle {
-  p: P5;
+  p: P5WithFeeding;  // Update type here too
   pos: Vector;
   vel: Vector;
   acc: Vector;
@@ -19,7 +24,7 @@ class Particle {
   decay: number;
   feeding: boolean = false;
 
-  constructor(p: P5, x: number, y: number) {
+  constructor(p: P5WithFeeding, x: number, y: number) {
     this.p = p;
     this.pos = p.createVector(x, y);
     this.vel = p.createVector(0, 0);
@@ -118,7 +123,7 @@ class Particle {
 
 export function P5Canvas() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const p5Ref = useRef<P5 | null>(null);
+  const p5Ref = useRef<P5WithFeeding | null>(null);  // Update ref type
 
   const handleFeed = () => {
     if (p5Ref.current) {
@@ -132,7 +137,7 @@ export function P5Canvas() {
     import('p5').then(module => {
       const p5 = module.default;
       
-      const sketch = (p: P5) => {
+      const sketch = (p: P5WithFeeding) => {  // Update sketch parameter type
         let targetPos: Vector;
         const particles: Particle[] = [];
         let isFeeding = false;
@@ -214,7 +219,7 @@ export function P5Canvas() {
         };
       };
 
-      const p5Instance = new p5(sketch, containerRef.current);
+      const p5Instance = new p5(sketch, containerRef.current) as P5WithFeeding;
       p5Ref.current = p5Instance;
 
       return () => {
