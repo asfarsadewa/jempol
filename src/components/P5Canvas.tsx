@@ -138,7 +138,8 @@ export function P5Canvas() {
   };
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     import('p5').then(module => {
       const p5 = module.default;
@@ -224,7 +225,7 @@ export function P5Canvas() {
         };
       };
 
-      const p5Instance = new p5(sketch, containerRef.current) as P5WithFeeding;
+      const p5Instance = new p5(sketch, container) as P5WithFeeding;
       p5Ref.current = p5Instance;
 
       return () => {
