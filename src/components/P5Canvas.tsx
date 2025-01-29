@@ -29,6 +29,7 @@ class Particle {
   lifespan: number;
   decay: number;
   feeding: boolean = false;
+  growthFactor: number = 1;  // This will now be permanent
 
   constructor(p: P5WithFeeding, x: number, y: number) {
     this.p = p;
@@ -36,7 +37,8 @@ class Particle {
     this.vel = p.createVector(0, 0);
     this.acc = p.createVector(0, 0);
     this.maxSpeed = 12;
-    this.originalSize = p.random(6, 14);
+    this.baseSize = p.random(6, 14);
+    this.originalSize = this.baseSize;
     this.size = this.originalSize;
     this.distanceFromTarget = 0;
     this.lifespan = 255;
@@ -86,14 +88,14 @@ class Particle {
     // Very light gravity
     this.acc.add(this.p.createVector(0, 0.02));
     
-    // More dramatic size variation
+    // Use permanent growth factor
     const sizeNoise = this.p.noise(this.pos.x * 0.05, this.pos.y * 0.05, this.p.frameCount * 0.02);
     this.size = this.p.map(
       this.distanceFromTarget,
       0,
       300,
-      this.originalSize * (1.2 + sizeNoise * 0.8), // Bigger head
-      this.originalSize * 0.2  // Smaller tail
+      this.originalSize * this.growthFactor * (1.2 + sizeNoise * 0.8),
+      this.originalSize * this.growthFactor * 0.2
     );
 
     // Longer trails
@@ -155,8 +157,11 @@ export function P5Canvas() {
         p.startFeeding = () => {
           isFeeding = true;
           feedStartTime = p.millis();
-          // Set all particles to feeding mode
-          particles.forEach(particle => particle.feeding = true);
+          // Permanently increase size by 2x
+          particles.forEach(particle => {
+            particle.feeding = true;
+            particle.growthFactor *= 2; // This growth will now persist
+          });
         };
 
         p.draw = () => {
