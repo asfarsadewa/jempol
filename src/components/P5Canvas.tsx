@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { FeedButton } from './FeedButton';
 import type { Vector, Color } from 'p5';
+import type P5 from 'p5';
 
 class Particle {
-  p: any; // We'll type this as any for now since we get the actual p5 instance in constructor
+  p: P5;
   pos: Vector;
   vel: Vector;
   acc: Vector;
@@ -18,7 +19,7 @@ class Particle {
   decay: number;
   feeding: boolean = false;
 
-  constructor(p: any, x: number, y: number) {
+  constructor(p: P5, x: number, y: number) {
     this.p = p;
     this.pos = p.createVector(x, y);
     this.vel = p.createVector(0, 0);
@@ -117,7 +118,7 @@ class Particle {
 
 export function P5Canvas() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const p5Ref = useRef<any>(null); // Store p5 instance reference
+  const p5Ref = useRef<P5 | null>(null);
 
   const handleFeed = () => {
     if (p5Ref.current) {
@@ -131,9 +132,9 @@ export function P5Canvas() {
     import('p5').then(module => {
       const p5 = module.default;
       
-      const sketch = (p: any) => {
+      const sketch = (p: P5) => {
         let targetPos: Vector;
-        let particles: Particle[] = [];
+        const particles: Particle[] = [];
         let isFeeding = false;
         let feedStartTime = 0;
         const FEED_DURATION = 2000;
@@ -214,13 +215,13 @@ export function P5Canvas() {
       };
 
       const p5Instance = new p5(sketch, containerRef.current);
-      p5Ref.current = p5Instance; // Store the instance
+      p5Ref.current = p5Instance;
 
       return () => {
         p5Instance.remove();
       };
     });
-  }, []); // No dependencies needed
+  }, []);
 
   return (
     <div className="relative w-screen h-screen">
