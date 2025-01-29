@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { FeedButton } from './FeedButton';
 import type p5Type from 'p5';
 
-// Declare p5 as a variable that will be assigned in useEffect
-let p5: typeof p5Type;
-
 // Only import p5 on client side
+let p5Instance: typeof p5Type;
 if (typeof window !== 'undefined') {
-  p5 = require('p5');
+  import('p5').then(module => {
+    p5Instance = module.default;
+  });
 }
 
 class Particle {
@@ -44,7 +44,7 @@ class Particle {
   }
 
   follow(target: p5.Vector) {
-    let desired = p5.Vector.sub(target, this.pos);
+    const desired = p5Instance.Vector.sub(target, this.pos);
     this.distanceFromTarget = desired.mag();
     
     const angle = this.p.noise(this.pos.x * 0.01, this.pos.y * 0.01, this.p.frameCount * 0.01) * this.p.TWO_PI;
@@ -130,9 +130,7 @@ export function P5Canvas() {
 
     const sketch = (p: typeof p5Type) => {
       let targetPos: p5.Vector;
-      let angle = 0;
       let showThanks = false;
-      let thanksOpacity = 0;
       let thanksStartTime = 0;
       
       p.setup = () => {
@@ -251,7 +249,7 @@ export function P5Canvas() {
       };
     };
 
-    const p5Instance = new p5(sketch, containerRef.current);
+    const p5Instance = new p5Instance(sketch, containerRef.current);
 
     return () => {
       p5Instance.remove();
