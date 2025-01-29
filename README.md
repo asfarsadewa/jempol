@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔥 Jempol - Interactive Particle Creature
 
-## Getting Started
+Jempol is an interactive web application that creates a mesmerizing particle-based creature that follows your touch/cursor. Built with Next.js 15, P5.js, and TypeScript, it demonstrates creative coding and fluid animation techniques.
 
-First, run the development server:
+## ✨ Features
 
+- **Responsive Particle System**: A dynamic particle system that creates a fluid, organic movement
+- **Touch & Mouse Support**: Fully responsive design that works on both mobile and desktop
+- **Interactive Feeding**: Feed the creature to trigger special behaviors and animations
+- **Organic Movement**: Natural-looking motion using steering behaviors and Perlin noise
+- **Dynamic Colors**: Beautiful color transitions during interactions
+
+## 🚀 Getting Started
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+git clone https://github.com/yourusername/jempol.git
+cd jempol
+```
+
+2. Install dependencies:
+```bash
+bun install
+```
+
+3. Run the development server:
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠 Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [Next.js 15](https://nextjs.org/) - React Framework
+- [P5.js](https://p5js.org/) - Creative Coding Library
+- [TypeScript](https://www.typescriptlang.org/) - Type Safety
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [shadcn/ui](https://ui.shadcn.com/) - UI Components
+- [Bun](https://bun.sh/) - JavaScript Runtime & Package Manager
 
-## Learn More
+## 🎮 How to Use
 
-To learn more about Next.js, take a look at the following resources:
+1. **Basic Interaction**: Move your cursor or touch the screen to guide the particle creature
+2. **Feeding**: Click the food button in the bottom right to trigger special behaviors
+3. **Mobile**: Best experienced on mobile devices with touch interaction
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 Customization
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The particle system can be customized by modifying parameters in `src/components/P5Canvas.tsx`:
 
-## Deploy on Vercel
+- Particle count
+- Particle size
+- Movement speed
+- Colors
+- Physics behavior
+- Animation durations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📱 Mobile-First Design
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Jempol is designed with mobile-first principles, ensuring a smooth and engaging experience on touch devices while maintaining full functionality on desktop browsers.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to submit a Pull Request.
+
+## 🙏 Acknowledgments
+
+- Inspired by particle systems and fluid dynamics
+- Built with modern web technologies
+- Created for interactive art exploration
+
+---
+
+Made with ❤️ by [Your Name]

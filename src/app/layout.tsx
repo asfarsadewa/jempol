@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jempol - Touch Particle Effects",
+  title: "Jempol - Si Cacing Api",
   description: "A satisfying interactive particle effect that follows your thumb",
 };
 
