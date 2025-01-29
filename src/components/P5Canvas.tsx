@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import p5 from 'p5';
+import { FeedButton } from './FeedButton';
 
 class Particle {
   p: p5;
@@ -101,20 +102,34 @@ class Particle {
 
 export function P5Canvas() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isFeeding, setIsFeeding] = useState(false);
+  const feedingTimeRef = useRef<number>(0);
+  const centerPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   
+  const handleFeed = () => {
+    setIsFeeding(true);
+    feedingTimeRef.current = Date.now();
+  };
+
   useEffect(() => {
     if (!containerRef.current) return;
 
     const particles: Particle[] = [];
     const NUM_PARTICLES = 3000;
+    const FEEDING_DURATION = 3000; // 3 seconds of excited behavior
 
     const sketch = (p: p5) => {
+      let targetPos: p5.Vector;
+      
       p.setup = () => {
         const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
         canvas.touchStarted(() => false);
         canvas.touchMoved(() => false);
         
         p.colorMode(p.HSB);
+        // Set center position
+        centerPosRef.current = { x: p.width/2, y: p.height/2 };
+        targetPos = p.createVector(centerPosRef.current.x, centerPosRef.current.y);
         
         for (let i = 0; i < NUM_PARTICLES; i++) {
           particles.push(
@@ -130,20 +145,50 @@ export function P5Canvas() {
       p.draw = () => {
         p.background(0, 8);
         
-        const target = p.createVector(
+        // Normal target follows mouse/touch
+        const mouseTarget = p.createVector(
           p.touches.length > 0 ? p.touches[0].x : p.mouseX,
           p.touches.length > 0 ? p.touches[0].y : p.mouseY
         );
 
+        // When feeding, create excited behavior around the center
+        if (isFeeding) {
+          const timeSinceFeeding = Date.now() - feedingTimeRef.current;
+          
+          if (timeSinceFeeding > FEEDING_DURATION) {
+            setIsFeeding(false);
+          } else {
+            // Create expanding/contracting circular motion during feeding
+            const angle = (timeSinceFeeding * 0.005); // Slower rotation
+            const baseRadius = p.min(p.width, p.height) * 0.15; // Responsive radius
+            const radius = baseRadius + Math.sin(timeSinceFeeding * 0.003) * (baseRadius * 0.5);
+            
+            targetPos.x = centerPosRef.current.x + Math.cos(angle) * radius;
+            targetPos.y = centerPosRef.current.y + Math.sin(angle) * radius;
+            
+            // Change particle colors during feeding
+            particles.forEach(particle => {
+              const hue = p.map(p.noise(particle.pos.x * 0.01, particle.pos.y * 0.01, p.frameCount * 0.02), 
+                              0, 1, 0, 60);
+              particle.color = p.color(hue, 100, 100);
+            });
+          }
+        } else {
+          targetPos = mouseTarget;
+        }
+
+        // Update center position on window resize
+        centerPosRef.current = { x: p.width/2, y: p.height/2 };
+
         for (let i = particles.length - 1; i >= 0; i--) {
           if (particles[i].isDead()) {
             particles.splice(i, 1);
-            particles.push(new Particle(p, target.x, target.y));
+            particles.push(new Particle(p, targetPos.x, targetPos.y));
           }
         }
 
         particles.forEach(particle => {
-          particle.follow(target);
+          particle.follow(targetPos);
           particle.update();
           particle.draw();
         });
@@ -151,6 +196,7 @@ export function P5Canvas() {
 
       p.windowResized = () => {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
+        centerPosRef.current = { x: p.width/2, y: p.height/2 };
       };
     };
 
@@ -159,7 +205,12 @@ export function P5Canvas() {
     return () => {
       p5Instance.remove();
     };
-  }, []);
+  }, [isFeeding]);
 
-  return <div ref={containerRef} />;
+  return (
+    <div className="relative w-screen h-screen">
+      <div ref={containerRef} />
+      <FeedButton onFeed={handleFeed} />
+    </div>
+  );
 } 
