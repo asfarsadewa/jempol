@@ -1,8 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import p5 from 'p5';
 import { FeedButton } from './FeedButton';
+import type p5Type from 'p5';
+
+// Declare p5 as a variable that will be assigned in useEffect
+let p5: typeof p5Type;
+
+// Only import p5 on client side
+if (typeof window !== 'undefined') {
+  p5 = require('p5');
+}
 
 class Particle {
   p: p5;
