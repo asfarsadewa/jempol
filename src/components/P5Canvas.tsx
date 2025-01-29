@@ -37,8 +37,7 @@ class Particle {
     this.vel = p.createVector(0, 0);
     this.acc = p.createVector(0, 0);
     this.maxSpeed = 12;
-    this.baseSize = p.random(6, 14);
-    this.originalSize = this.baseSize;
+    this.originalSize = p.random(6, 14);  // Set original size directly
     this.size = this.originalSize;
     this.distanceFromTarget = 0;
     this.lifespan = 255;
