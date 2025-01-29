@@ -5,9 +5,15 @@ import { FeedButton } from './FeedButton';
 import type { Vector, Color } from 'p5';
 import type P5 from 'p5';
 
+interface TouchPoint {
+  x: number;
+  y: number;
+}
+
 // Extend P5 type to include our custom method
 interface P5WithFeeding extends P5 {
   startFeeding: () => void;
+  touches: TouchPoint[];  // Add touches to our extended P5 type
 }
 
 class Particle {
@@ -157,10 +163,9 @@ export function P5Canvas() {
           
           // Always update target position first
           if (!isFeeding) {
-            targetPos.set(
-              p.touches.length > 0 ? p.touches[0].x : p.mouseX,
-              p.touches.length > 0 ? p.touches[0].y : p.mouseY
-            );
+            const touchX = p.touches[0]?.x ?? p.mouseX;  // Use optional chaining and nullish coalescing
+            const touchY = p.touches[0]?.y ?? p.mouseY;
+            targetPos.set(touchX, touchY);
           } else {
             const elapsed = p.millis() - feedStartTime;
             if (elapsed > FEED_DURATION) {
