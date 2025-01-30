@@ -29,7 +29,7 @@ class Particle {
   lifespan: number;
   decay: number;
   feeding: boolean = false;
-  growthFactor: number = 1;  // This will now be permanent
+  growthFactor: number = 1.5;  // This will now be permanent
 
   constructor(p: P5WithFeeding, x: number, y: number) {
     this.p = p;
@@ -147,6 +147,8 @@ export function P5Canvas() {
       
       const sketch = (p: P5WithFeeding) => {  // Update sketch parameter type
         let targetPos: Vector;
+        let currentTarget: Vector;  // Add this to track current position
+        const LERP_FACTOR = 0.1;    // Adjust this for faster/slower transitions
         const particles: Particle[] = [];
         let isFeeding = false;
         let feedStartTime = 0;
@@ -159,7 +161,7 @@ export function P5Canvas() {
           // Permanently increase size by 2x
           particles.forEach(particle => {
             particle.feeding = true;
-            particle.growthFactor *= 2; // This growth will now persist
+            particle.growthFactor *= 1.5; // This growth will now persist
           });
         };
 
@@ -168,9 +170,13 @@ export function P5Canvas() {
           
           // Always update target position first
           if (!isFeeding) {
-            const touchX = p.touches[0]?.x ?? p.mouseX;  // Use optional chaining and nullish coalescing
+            const touchX = p.touches[0]?.x ?? p.mouseX;
             const touchY = p.touches[0]?.y ?? p.mouseY;
-            targetPos.set(touchX, touchY);
+            
+            // Smoothly move current target towards touch position
+            currentTarget.x = p.lerp(currentTarget.x, touchX, LERP_FACTOR);
+            currentTarget.y = p.lerp(currentTarget.y, touchY, LERP_FACTOR);
+            targetPos.set(currentTarget.x, currentTarget.y);
           } else {
             const elapsed = p.millis() - feedStartTime;
             if (elapsed > FEED_DURATION) {
@@ -207,6 +213,7 @@ export function P5Canvas() {
           
           p.colorMode(p.HSB);
           targetPos = p.createVector(p.width/2, p.height/2);
+          currentTarget = p.createVector(p.width/2, p.height/2);
           
           // Initialize particles
           for (let i = 0; i < NUM_PARTICLES; i++) {
@@ -226,6 +233,7 @@ export function P5Canvas() {
         p.windowResized = () => {
           p.resizeCanvas(p.windowWidth, p.windowHeight);
           targetPos.set(p.width/2, p.height/2);
+          currentTarget.set(p.width/2, p.height/2);
         };
       };
 
