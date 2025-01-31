@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { FeedButton } from './FeedButton';
+import { PetButton } from './PetButton';
 import type { Vector, Color } from 'p5';
 import type P5 from 'p5';
 
@@ -13,6 +14,7 @@ interface TouchPoint {
 // Extend P5 type to include our custom method
 interface P5WithFeeding extends P5 {
   startFeeding: () => void;
+  startPetting: () => void;  // Add new method
   touches: TouchPoint[];  // Add touches to our extended P5 type
 }
 
@@ -138,6 +140,12 @@ export function P5Canvas() {
     }
   };
 
+  const handlePet = () => {
+    if (p5Ref.current) {
+      p5Ref.current.startPetting();
+    }
+  };
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -154,6 +162,9 @@ export function P5Canvas() {
         let feedStartTime = 0;
         const FEED_DURATION = 2000;
         const NUM_PARTICLES = 2000;
+        let isPetting = false;
+        let petStartTime = 0;
+        const PET_DURATION = 3000;  // Increased from 1500 to 3000ms
 
         p.startFeeding = () => {
           isFeeding = true;
@@ -165,19 +176,47 @@ export function P5Canvas() {
           });
         };
 
+        p.startPetting = () => {
+          if (!isFeeding) {
+            isPetting = true;
+            petStartTime = p.millis();
+            // Set target to center when starting pet
+            currentTarget.set(p.width/2, p.height/2);
+            targetPos.set(p.width/2, p.height/2);
+          }
+        };
+
         p.draw = () => {
           p.background(0, 4);
           
-          // Always update target position first
-          if (!isFeeding) {
-            const touchX = p.touches[0]?.x ?? p.mouseX;
-            const touchY = p.touches[0]?.y ?? p.mouseY;
-            
-            // Smoothly move current target towards touch position
-            currentTarget.x = p.lerp(currentTarget.x, touchX, LERP_FACTOR);
-            currentTarget.y = p.lerp(currentTarget.y, touchY, LERP_FACTOR);
-            targetPos.set(currentTarget.x, currentTarget.y);
-          } else {
+          if (isPetting) {
+            const elapsed = p.millis() - petStartTime;
+            if (elapsed > PET_DURATION) {
+              isPetting = false;
+            } else {
+              // Wiggle around the center
+              const wiggleX = Math.sin(elapsed * 0.01) * 50;
+              const wiggleY = Math.cos(elapsed * 0.015) * 30;
+              targetPos.set(
+                p.width/2 + wiggleX,
+                p.height/2 + wiggleY
+              );
+
+              // Add wiggling text
+              const textWiggleX = Math.sin(elapsed * 0.008) * 15;
+              const textWiggleY = Math.cos(elapsed * 0.01) * 10;
+              
+              p.push();
+              p.fill(255, Math.sin(elapsed * 0.01) * 127 + 128);
+              p.textSize(p.width * 0.06);
+              p.text(
+                "✨ Wiggly Wiggly! ✨", 
+                p.width/2 + textWiggleX, 
+                p.height * 0.3 + textWiggleY
+              );
+              p.pop();
+            }
+          } else if (isFeeding) {
             const elapsed = p.millis() - feedStartTime;
             if (elapsed > FEED_DURATION) {
               isFeeding = false;
@@ -189,7 +228,29 @@ export function P5Canvas() {
                 p.width/2 + Math.cos(progress) * radius,
                 p.height/2 + Math.sin(progress) * radius * 0.5
               );
+
+              // Add Yum yum text
+              const textWiggleX = Math.sin(elapsed * 0.006) * 20;
+              const textWiggleY = Math.cos(elapsed * 0.008) * 15;
+              
+              p.push();
+              p.fill(255, Math.sin(elapsed * 0.01) * 127 + 128);
+              p.textSize(p.width * 0.06);
+              p.text(
+                "🍖 Yum yum! 🍖", 
+                p.width/2 + textWiggleX, 
+                p.height * 0.3 + textWiggleY
+              );
+              p.pop();
             }
+          } else {
+            // Normal movement code
+            const touchX = p.touches[0]?.x ?? p.mouseX;
+            const touchY = p.touches[0]?.y ?? p.mouseY;
+            
+            currentTarget.x = p.lerp(currentTarget.x, touchX, LERP_FACTOR);
+            currentTarget.y = p.lerp(currentTarget.y, touchY, LERP_FACTOR);
+            targetPos.set(currentTarget.x, currentTarget.y);
           }
 
           // Update and draw particles
@@ -249,6 +310,7 @@ export function P5Canvas() {
   return (
     <div className="relative w-screen h-screen">
       <div ref={containerRef} />
+      <PetButton onPet={handlePet} />
       <FeedButton onFeed={handleFeed} />
     </div>
   );
