@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { FeedButton } from './FeedButton';
 import { PetButton } from './PetButton';
+import { SleepButton } from './SleepButton';
 import type { Vector, Color } from 'p5';
 import type P5 from 'p5';
 
@@ -14,8 +15,9 @@ interface TouchPoint {
 // Extend P5 type to include our custom method
 interface P5WithFeeding extends P5 {
   startFeeding: () => void;
-  startPetting: () => void;  // Add new method
-  touches: TouchPoint[];  // Add touches to our extended P5 type
+  startPetting: () => void;
+  startSleeping: () => void;
+  touches: TouchPoint[];
 }
 
 class Particle {
@@ -146,6 +148,12 @@ export function P5Canvas() {
     }
   };
 
+  const handleSleep = () => {
+    if (p5Ref.current) {
+      p5Ref.current.startSleeping();
+    }
+  };
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -165,6 +173,10 @@ export function P5Canvas() {
         let isPetting = false;
         let petStartTime = 0;
         const PET_DURATION = 3000;  // Increased from 1500 to 3000ms
+        let isSleeping = false;
+        let sleepStartTime = 0;
+        const SLEEP_DURATION = 6000;
+        const LERP_FACTOR_SLEEP = 0.02;
 
         p.startFeeding = () => {
           isFeeding = true;
@@ -186,10 +198,62 @@ export function P5Canvas() {
           }
         };
 
+        p.startSleeping = () => {
+          if (!isFeeding && !isPetting) {
+            isSleeping = true;
+            sleepStartTime = p.millis();
+            // Don't set position immediately, let it move slowly
+          }
+        };
+
         p.draw = () => {
           p.background(0, 4);
           
-          if (isPetting) {
+          // Calculate corner positions each frame
+          const CORNER_X = p.width * 0.15;    // Left side
+          const CORNER_Y = p.height * 0.85;   // Bottom
+          
+          if (isSleeping) {
+            const elapsed = p.millis() - sleepStartTime;
+            if (elapsed > SLEEP_DURATION) {
+              isSleeping = false;
+            } else {
+              // Slowly move to corner
+              currentTarget.x = p.lerp(currentTarget.x, CORNER_X, LERP_FACTOR_SLEEP);
+              currentTarget.y = p.lerp(currentTarget.y, CORNER_Y, LERP_FACTOR_SLEEP);
+              
+              // Gentle curling pulse
+              const angle = elapsed * 0.001;
+              const curledX = currentTarget.x + Math.cos(angle) * 15;
+              const curledY = currentTarget.y + Math.sin(angle) * 15;
+              
+              // Slower pulsing
+              const pulse = Math.sin(elapsed * 0.0008) * 8;
+              targetPos.set(
+                curledX + pulse,
+                curledY + pulse
+              );
+
+              // Floating Zzz text
+              const zSize = p.width * 0.04;
+              p.push();
+              p.fill(255, Math.sin(elapsed * 0.001) * 127 + 128);
+              p.textSize(zSize);
+              
+              // Multiple Z's floating up in an arc
+              const numZ = 3;
+              for (let i = 0; i < numZ; i++) {
+                const zPhase = (elapsed * 0.0008 + i * 1.0) % 3;
+                const arcX = CORNER_X + 50 + Math.sin(zPhase * 0.5) * 40;
+                const y = CORNER_Y - 80 - zPhase * 40;
+                const opacity = Math.max(0, 1 - zPhase) * 255;
+                
+                p.fill(255, opacity);
+                p.text("Z", arcX, y);
+              }
+              p.pop();
+            }
+          } else if (isPetting) {
             const elapsed = p.millis() - petStartTime;
             if (elapsed > PET_DURATION) {
               isPetting = false;
@@ -293,8 +357,7 @@ export function P5Canvas() {
 
         p.windowResized = () => {
           p.resizeCanvas(p.windowWidth, p.windowHeight);
-          targetPos.set(p.width/2, p.height/2);
-          currentTarget.set(p.width/2, p.height/2);
+          // Don't need to update corner positions as they're calculated each frame
         };
       };
 
@@ -310,6 +373,7 @@ export function P5Canvas() {
   return (
     <div className="relative w-screen h-screen">
       <div ref={containerRef} />
+      <SleepButton onSleep={handleSleep} />
       <PetButton onPet={handlePet} />
       <FeedButton onFeed={handleFeed} />
     </div>
